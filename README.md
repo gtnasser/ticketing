@@ -40,25 +40,50 @@ sistema_ocorrencias/
 ├── app.py              # interface Streamlit (login, cadastro, pesquisa)
 ├── database.py         # camada de banco (SQLite)
 ├── auth.py             # autenticação com senha criptografada
-├── criar_usuario.py    # script para criar usuários
+├── create_user.py      # script para criar usuários
 ├── requirements.txt    # dependências
 └── ocorrencias.db      # banco (criado automaticamente)
 ```
 
 
 
+## TODO:
+
+Lista de desejos:
+* textos das soluções WYSIWYG
+* lista de atualizações
+* usuário redefinir a sua senha
+* backup automatico
+* forçar troca de senha periódica 
+* login autenticacao AD
+* exportar pesquisa
+* execucao em docker
 
 
+## To start developing
 
-
-
------
-
-
-
+```bash
 mkdir ticketing
 cd ticketing
 python -m venv venv
 .\venv\Scripts\activate
-
 git init
+git add.
+```
+
+## To run this project
+
+```bash
+git clone...
+cd ticketing
+python -m venv venv                         # cria ambiente virtual
+.\venv\Scripts\activate
+pip install -r requirements.txt
+python create_user.py admin senha123        # cria o primeiro usuário
+python create_user.py john wick             # cria outro usuario
+streamlit run app.py
+streamlit run app.py --server.address 0.0.0.0 --server.port 8501 # server.address habilita execucao remota no linux
+```
+
+
+
