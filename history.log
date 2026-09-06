@@ -1,0 +1,25 @@
+# 1.0.0 — 2026-09-04
+
+✨ Nova funcionalidade
+- Sistema inicial: login e navegação básica
+- Banco SQLite
+
+---
+
+# 1.1.0 — 2026-09-05
+
+✨ Nova funcionalidade
+- Página de cadastro de ocorrências
+- Página de pesquisa de ocorrências
+- Página de relatório por tipo e usuário
+- Página **Sobre** com histórico de versões
+
+🔒 Segurança
+- Senhas armazenadas com hash PBKDF2
+
+♻️ Refatoração
+- Controle de sessão
+- Controle de acesso e autenticação
+
+---
+
