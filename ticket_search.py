@@ -36,7 +36,6 @@ def run() -> None:
         submit = st.form_submit_button("🔎 Buscar")
 
     if submit:
-        todo="""
         query = "SELECT * FROM occurrences WHERE 1=1"
         params = []
 
@@ -53,8 +52,8 @@ def run() -> None:
 
         if term.strip():
             like = f"%{term.strip()}%"
-            query += " "" AND (title LIKE ? OR temporary_solution LIKE ?
-                          OR definitive_solution LIKE ? OR username LIKE ?)" ""
+            query += """ AND (title LIKE ? OR temporary_solution LIKE ?
+                          OR definitive_solution LIKE ? OR username LIKE ?)"""
             params.extend([like, like, like, like])
 
         query += " ORDER BY occurrence_date DESC, registered_at DESC"
@@ -80,6 +79,4 @@ def run() -> None:
                 st.write(f"**Registrado por:** {row['username']}")
                 st.write(f"**Registrado em:** {_format_datetime(row['registered_at'])}")
 
-        """
-        st.success("TODO: add database stuff, basic routing is OK")
 

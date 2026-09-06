@@ -20,15 +20,14 @@ def run() -> None:
             st.error("O título é obrigatório.")
         else:
             registered_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            todo="""
             with get_connection() as conn:
                 conn.execute(
-                    " ""
+                    """
                     INSERT INTO occurrences
                         (occurrence_date, title, type, temporary_solution,
                          definitive_solution, username, registered_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
-                    " "",
+                    """,
                     (
                         occurrence_date.strftime("%Y-%m-%d"),
                         title.strip(),
@@ -40,7 +39,5 @@ def run() -> None:
                     ),
                 )
             st.success("Ocorrência registrada com sucesso!")
-            """
-        st.success("TODO: add database stuff, basic routing is OK")
 
 

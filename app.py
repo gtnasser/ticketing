@@ -14,7 +14,7 @@ import reports
 st.set_page_config(page_title="Ticketing", page_icon="📋", layout="wide")
 
 # ---------- Inicializa banco de dados ----------
-#TODO: init_db()
+init_db()
 
 # ---------- Controle de sessão ----------
 if not is_auth():

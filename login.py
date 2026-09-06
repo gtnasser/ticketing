@@ -3,7 +3,6 @@ import streamlit as st
 from auth import clear_session, set_current_user, validate
 
 # ---------- autenticacao provisoria ----------
-
 def secret_validate(username: str, password: str) -> bool:
     """validate user/password by /.streamlit/secrets.toml"""
     _username = st.secrets['login']['user']
@@ -26,7 +25,7 @@ def do_login() -> bool:
         submit = st.form_submit_button("Entrar")
 
     if submit:
-        if secret_validate(username, password):
+        if validate(username, password):
             set_current_user(username)
             st.rerun()
         st.error("Usuário ou senha inválidos.")
