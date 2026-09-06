@@ -21,20 +21,18 @@ if not is_auth():
     st.stop()
 
 # ---------- Menu lateral ----------
+PAGES = {
+    "🏠 Home": home.run,
+    "📝 Cadastrar Ocorrência": ticket_register.run,
+    "🔍 Pesquisar Ocorrências": ticket_search.run,
+    "ℹ️ Sobre": about.run,
+}
 with st.sidebar:
     st.title(f"👤 {get_current_user()}")
-    page = st.radio("Manu", ["📝 Cadastrar Ocorrência", "🔍 Pesquisar Ocorrências", "ℹ️ Sobre", ], index=None)
+    page = st.radio("Manu", list(PAGES.keys()))
     if st.button("Sair"):
         do_logout()
         st.rerun()
 
 # ---------- Roteamento ----------
-if page:
-    if page.startswith("📝"):
-        ticket_register.run()
-    elif page.startswith("🔍"):
-        ticket_search.run()
-    elif page.startswith("ℹ️"):
-        about.run()
-else:
-    home.run()
+PAGES[page]()

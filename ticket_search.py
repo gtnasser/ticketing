@@ -1,6 +1,20 @@
 import streamlit as st
 from datetime import datetime
 
+from database import get_connection
+
+def _format_date(iso: str) -> str:
+    try:
+        return datetime.strptime(iso, "%Y-%m-%d").strftime("%d/%m/%Y")
+    except ValueError:
+        return iso
+
+def _format_datetime(iso: str) -> str:
+    try:
+        return datetime.strptime(iso, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
+    except ValueError:
+        return iso
+
 def run() -> None:
     st.subheader("🔍 Pesquisar Ocorrências", divider='rainbow')
 
@@ -68,16 +82,4 @@ def run() -> None:
 
         """
         st.success("TODO: add database stuff, basic routing is OK")
-
-def _format_date(iso: str) -> str:
-    try:
-        return datetime.strptime(iso, "%Y-%m-%d").strftime("%d/%m/%Y")
-    except ValueError:
-        return iso
-
-def _format_datetime(iso: str) -> str:
-    try:
-        return datetime.strptime(iso, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")
-    except ValueError:
-        return iso
 

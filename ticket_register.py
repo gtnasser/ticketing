@@ -1,6 +1,9 @@
 import streamlit as st
 from datetime import datetime
 
+from database import get_connection
+from auth import get_current_user
+
 def run() -> None:
     st.subheader("📝 Cadastrar Ocorrência", divider='rainbow')
 
