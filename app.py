@@ -9,6 +9,7 @@ import about
 import home
 import ticket_register
 import ticket_search
+import reports
 
 st.set_page_config(page_title="Ticketing", page_icon="📋", layout="wide")
 
@@ -25,6 +26,7 @@ PAGES = {
     "🏠 Home": home.run,
     "📝 Cadastrar Ocorrência": ticket_register.run,
     "🔍 Pesquisar Ocorrências": ticket_search.run,
+    "📊 Relatório de Ocorrências": reports.run,    
     "ℹ️ Sobre": about.run,
 }
 with st.sidebar:
