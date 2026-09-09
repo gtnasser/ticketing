@@ -8,7 +8,7 @@ Usage:
 import sys
 
 from auth import create_user
-from database import init_db
+from db import init_db
 
 def main() -> None:
     if len(sys.argv) != 3:
@@ -16,8 +16,12 @@ def main() -> None:
         sys.exit(1)
 
     username, password = sys.argv[1], sys.argv[2]
-    init_db()
 
+    if not username.strip() or not password.strip():
+        print("Error: username and password cannot be empty.")
+        sys.exit(1)
+
+    init_db()
     if create_user(username, password):
         print(f"User '{username}' created successfully.")
     else:

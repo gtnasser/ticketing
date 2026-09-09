@@ -1,10 +1,12 @@
 import hashlib
 import os
-import sqlite3
 
 import streamlit as st
+from sqlalchemy.exc import IntegrityError
 
-from database import get_connection
+from db import SessionLocal, get_user
+from models import User
+
 
 ITERATIONS = 100_000
 _SESSION_USER_KEY = "user"
@@ -41,24 +43,20 @@ def _hash_password(password: str, salt: bytes | None = None) -> tuple[str, str]:
 
 def create_user(username: str, password: str) -> bool:
     salt_hex, hash_hex = _hash_password(password)
+    user = User(username=username, password_hash=f"{salt_hex}${hash_hex}")
     try:
-        with get_connection() as conn:
-            conn.execute(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                (username, f"{salt_hex}${hash_hex}"),
-            )
+        with SessionLocal() as session: 
+            session.add(user)
+            session.commit()
         return True
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         return False
-
+    
 def validate(username: str, password: str) -> bool:
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT password_hash FROM users WHERE username = ?", (username,)
-        ).fetchone()
-    if row is None:
+    user = get_user(username)
+    if user is None:
         return False
-    salt_hex, hash_hex = row["password_hash"].split("$")
+    salt_hex, hash_hex = user.password_hash.split("$")
     salt = bytes.fromhex(salt_hex)
     digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, ITERATIONS)
     return digest.hex() == hash_hex

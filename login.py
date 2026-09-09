@@ -13,15 +13,14 @@ def secret_validate(username: str, password: str) -> bool:
         return False
 
 
-
-def do_login() -> bool:
-    """Render the login screen. Returns True when authenticated."""
+def do_login() -> None:
+    """Render the login screen."""
     st.subheader("🔐 Registro de Ocorrências")
     st.write(":red[Acesse com seu usuário e senha]")
 
     with st.form("login"):
-        username = st.text_input('Usuário', "user1", placeholder='Digite o seu usuário')
-        password = st.text_input('Senha',"password1", type="password", placeholder='Digite a sua senha')
+        username = st.text_input('Usuário', placeholder='Digite o seu usuário')
+        password = st.text_input('Senha', type="password", placeholder='Digite a sua senha')
         submit = st.form_submit_button("Entrar")
 
     if submit:

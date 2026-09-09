@@ -1,7 +1,11 @@
 import streamlit as st
 from datetime import datetime
 
-from database import get_connection
+from sqlalchemy import or_, select
+
+from db import SessionLocal
+from models import Occurrence
+
 
 def _format_date(iso: str) -> str:
     try:
@@ -21,7 +25,7 @@ def run() -> None:
     with st.form("filters"):
         col1, col2 = st.columns(2)
         with col1:
-            type_ = st.selectbox("Tipo", ["Todos", "Erro de sistema", "Erro de operação", "Outros"])
+            occurrence_type = st.selectbox("Tipo", ["Todos", "Erro de sistema", "Erro de operação", "Outros"])
         with col2:
             term = st.text_input("Buscar em título, soluções ou usuário")
 
@@ -36,30 +40,38 @@ def run() -> None:
         submit = st.form_submit_button("🔎 Buscar")
 
     if submit:
-        query = "SELECT * FROM occurrences WHERE 1=1"
-        params = []
+        stmt = select(Occurrence)
 
         if use_dates:
             if start_date > end_date:
                 st.warning("Data inicial maior que a data final. Ajuste os filtros.")
                 return
-            query += " AND occurrence_date BETWEEN ? AND ?"
-            params.extend([start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d")])
+            stmt = stmt.where(
+                Occurrence.occurrence_date >= start_date.strftime("%Y-%m-%d"),
+                Occurrence.occurrence_date <= end_date.strftime("%Y-%m-%d"),
+            )
 
-        if type_ != "Todos":
-            query += " AND type = ?"
-            params.append(type_)
+        if occurrence_type != "Todos":
+            stmt = stmt.where(Occurrence.occurrence_type == occurrence_type)
 
         if term.strip():
             like = f"%{term.strip()}%"
-            query += """ AND (title LIKE ? OR temporary_solution LIKE ?
-                          OR definitive_solution LIKE ? OR username LIKE ?)"""
-            params.extend([like, like, like, like])
+            stmt = stmt.where(
+                or_(
+                    Occurrence.title.like(like),
+                    Occurrence.temporary_solution.like(like),
+                    Occurrence.definitive_solution.like(like),
+                    Occurrence.username.like(like),
+                )
+            )
 
-        query += " ORDER BY occurrence_date DESC, registered_at DESC"
+        stmt = stmt.order_by(
+            Occurrence.occurrence_date.desc(),
+            Occurrence.registered_at.desc(),
+        )
 
-        with get_connection() as conn:
-            results = conn.execute(query, params).fetchall()
+        with SessionLocal() as session:
+            results = session.scalars(stmt).all()
 
         if not results:
             st.info("Nenhuma ocorrência encontrada com esses filtros.")
@@ -69,14 +81,14 @@ def run() -> None:
 
         for row in results:
             with st.expander(
-                f"{_format_date(row['occurrence_date'])} — {row['title']} "
-                f"({row['type']}) — {row['username']}"
+                f"{_format_date(row.occurrence_date)} — {row.title} "
+                f"({row.occurrence_type}) — {row.username}"
             ):
-                st.write(f"**Data da ocorrência:** {_format_date(row['occurrence_date'])}")
-                st.write(f"**Tipo:** {row['type']}")
-                st.write(f"**Solução provisória:** {row['temporary_solution'] or '—'}")
-                st.write(f"**Solução definitiva:** {row['definitive_solution'] or '—'}")
-                st.write(f"**Registrado por:** {row['username']}")
-                st.write(f"**Registrado em:** {_format_datetime(row['registered_at'])}")
+                st.write(f"**Data da ocorrência:** {_format_date(row.occurrence_date)}")
+                st.write(f"**Tipo:** {row.occurrence_type}")
+                st.write(f"**Solução provisória:** {row.temporary_solution or '—'}")
+                st.write(f"**Solução definitiva:** {row.definitive_solution or '—'}")
+                st.write(f"**Registrado por:** {row.username}")
+                st.write(f"**Registrado em:** {_format_datetime(row.registered_at)}")
 
-
+ 

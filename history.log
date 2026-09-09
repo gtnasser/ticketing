@@ -1,25 +1,25 @@
 # 1.0.0 — 2026-09-04
 
 ✨ Nova funcionalidade
-- Sistema inicial: login e navegação básica
-- Banco SQLite
+- Inclusão de ocorrências
+- Pesquisa de ocorrências
+- Histórico de versões
+- Persistência em Banco SQLite
+
+🔒 Segurança
+- Autenticação do usuário
+- Senhas armazenadas com hash PBKDF2
 
 ---
 
-# 1.1.0 — 2026-09-05
+# 1.1.0 — 2026-09-08
 
 ✨ Nova funcionalidade
-- Página de cadastro de ocorrências
-- Página de pesquisa de ocorrências
-- Página de relatório por tipo e usuário
-- Página **Sobre** com histórico de versões
-
-🔒 Segurança
-- Senhas armazenadas com hash PBKDF2
+- Dashboard (visão geral)
+- Relatório e Análises
 
 ♻️ Refatoração
-- Controle de sessão
-- Controle de acesso e autenticação
+- Adoção do SQLAlchemy para acesso a bancos relacionais
 
 ---
 

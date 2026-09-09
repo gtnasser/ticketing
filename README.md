@@ -14,7 +14,8 @@ Criar um sistema simples para armazenar e consultar ocorrências e as soluções
 **Requisitos funcionais:**
 - Multiusuário, com autenticação simples (usuário/senha) validada no banco local.
 - Cadastro e pesquisa de ocorrências (edição/exclusão: evolução futura).
-- Pesquisa por texto com filtros (tipo e período).
+- Pesquisa por texto com filtros.
+- Relatório com gráficos (evolução temporal, contagem por mês).
 - Criação de usuários via script de linha de comando (`create_user.py`).
 - Atributos da ocorrência:
   - Data da ocorrência
@@ -26,11 +27,11 @@ Criar um sistema simples para armazenar e consultar ocorrências e as soluções
   - Data/hora do registro da ocorrência
 - Atributos do usuário:
   - username
-  - password (armazenada com hash PBKDF2)
+  - password
 
 
 **Requisitos não funcionais:**
-- Banco de dados local (SQLite, arquivo único).
+- Flexibilidade para uso de banco de dados relacional (SQLite, Postgres, Oracle, MySQL, SQL Server)
 - Autenticação simples (usuário/senha), no mesmo banco.
 - Senhas armazenadas com hash PBKDF2, nunca em texto puro.
 - Estimativa de usuários: 6.
@@ -44,7 +45,6 @@ Criar um sistema simples para armazenar e consultar ocorrências e as soluções
 - Tela de administração de usuários (criar, desativar, redefinir senha) na interface, em vez de script CLI.
 - Usuário redefinir a sua senha, e forçar a troca de senha periódica.
 - Exportação dos resultados em CSV/Excel.
-- Relatório com gráficos (evolução temporal, contagem por mês).
 - Log de acesso (quem logou/deslogou, data/hora) e estatísticas de uso.
 - Autenticação com sessão expirada (logout automático por inatividade).
 - Backup automático
@@ -122,17 +122,17 @@ python release.py 1.6.0 "feat: exportar ocorrências em CSV" "fix: filtro por pe
     ├── app.py                  # orquestração: login, menu lateral e roteamento
     ├── login.py                # fluxo de login/logout (do_login, do_logout)
     ├── auth.py                 # sessão e autenticação (is_auth, validate, create_user)
-    ├── database.py             # camada de banco (SQLite)
+    ├── db.py                   # camada de banco (SQLAlchemy)
     ├── create_user.py          # script CLI para criar usuários
-    ├── home.py                 # página inicial
+    ├── home.py                 # página inicial com dashboard
     ├── ticket_register.py      # página de cadastro de ocorrências
     ├── ticket_search.py        # página de pesquisa de ocorrências
-    ├── reports.py              # página de relatório
+    ├── report01.py             # página de relatório
     ├── about.py                # página Sobre (lê history.log)
     ├── history.log             # histórico de versões
     ├── release.py              # script para adicionar versões ao history.log
     ├── requirements.txt        # dependências (streamlit)
-    └── occurrences.db          # banco (criado automaticamente)
+    └── occurrences.db          # banco local (SQLite)
 ```
 
 ## 2. Tecnologias utilizadas
@@ -140,6 +140,7 @@ python release.py 1.6.0 "feat: exportar ocorrências em CSV" "fix: filtro por pe
 - **Python 3.9+** — linguagem de desenvolvimento.
 - **Streamlit** — framework web para a interface (única dependência externa).
 - **SQLite** — banco de dados local em arquivo único, sem servidor.
+- **SQLALchemy** — para facilitar e padronizar o acesso a bancos relationais.
 - **PBKDF2 (hashlib)** — criptografia das senhas, nunca armazenadas em texto puro.
 
 ## 3. Arquitetura
@@ -153,13 +154,13 @@ O sistema segue uma arquitetura simples de camadas, com responsabilidades bem de
         │
         ├── login.py ─────── fluxo de login/logout (do_login, do_logout)
         ├── auth.py ──────── sessão e autenticação (is_auth, validate, create_user)
-        ├── database.py ──── camada de acesso ao banco (SQLite)
+        ├── db.py ────────── camada de acesso ao banco
         │
         └── páginas (run())
             ├── home.py
             ├── ticket_register.py
             ├── ticket_search.py
-            ├── reports.py
+            ├── report01.py
             └── about.py
         │
         ▼
@@ -170,7 +171,7 @@ O sistema segue uma arquitetura simples de camadas, com responsabilidades bem de
 - **Roteamento por dicionário**: o menu lateral e o roteamento usam a mesma estrutura `PAGES = {rótulo: função}` — adicionar uma página é uma linha no dicionário.
 - **Sessão centralizada**: `auth.py` é o único módulo que manipula `st.session_state` (via `is_auth`, `get_current_user`, `clear_session`); as páginas nunca acessam a sessão diretamente.
 - **Login/logout concentrados**: `login.py` é o ponto único do fluxo de entrada/saída, facilitando futuras implementações de log e estatísticas de acesso.
-- **Banco isolado**: nenhuma página cria conexão própria — tudo passa por `database.py`.
+- **Banco isolado**: nenhuma página cria conexão própria — tudo passa por `db.py`.
 - **Páginas com `run()`**: cada página expõe um único ponto de entrada público; o `app.py` só orquestra.
 
 

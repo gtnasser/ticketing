@@ -1,46 +1,90 @@
 import streamlit as st
-from database import get_connection
+from sqlalchemy import func, select
+
+from db import SessionLocal
+from models import Occurrence
 
 
 def run() -> None:
+#    st.write(f"Bem-vindo, **{get_current_user()}**!")
     st.subheader("🏠 Welcome to Ticketing - Registro de Ocorrências", divider='rainbow')
 
+    with SessionLocal() as session:
 
-    with get_connection() as conn:
-        total = conn.execute(
-            "SELECT COUNT(*) AS n1 FROM occurrences"
-        ).fetchone()["n1"]
-        perm_qty = conn.execute(
-            "SELECT COUNT(*) AS n2 FROM occurrences WHERE NOT trim(definitive_solution) = ''"
-        ).fetchone()["n2"]
-        temp_qty = conn.execute(
-            "SELECT COUNT(*) AS n2 FROM occurrences WHERE NOT trim(temporary_solution) = ''"
-        ).fetchone()["n2"]
-        err_sis = conn.execute(
-            "SELECT COUNT(*) AS n FROM occurrences WHERE type = 'Erro de sistema'"
-        ).fetchone()["n"]
-        err_oper = conn.execute(
-            "SELECT COUNT(*) AS n FROM occurrences WHERE type = 'Erro de operação'"
-        ).fetchone()["n"]
-        err_na = conn.execute(
-            "SELECT COUNT(*) AS n FROM occurrences WHERE type = 'Outros'"
-        ).fetchone()["n"]
+        total = session.scalars(
+            select(func.count()).select_from(Occurrence)
+        ).one()
 
+        rows_type = session.execute(
+            select(Occurrence.occurrence_type, func.count().label("total"))
+            .group_by(Occurrence.occurrence_type)
+            .order_by(func.count().desc())
+        ).all()
+
+        rows_user = session.execute(
+            select(Occurrence.username, func.count().label("total"))
+            .group_by(Occurrence.username)
+            .order_by(func.count().desc())
+        ).all()
+
+        count_definitive = session.scalars(
+            select(func.count())
+            .select_from(Occurrence)
+            .where(Occurrence.definitive_solution != "")
+        ).one()
+
+        count_temporary = session.scalars(
+            select(func.count())
+            .select_from(Occurrence)
+            .where(Occurrence.temporary_solution != "")
+        ).one()
+
+        count_both = session.scalars(
+            select(func.count())
+            .select_from(Occurrence)
+            .where(
+                Occurrence.definitive_solution != "",
+                Occurrence.temporary_solution != "",
+            )
+        ).one()
+
+        count_none = session.scalars(
+            select(func.count())
+            .select_from(Occurrence)
+            .where(
+                Occurrence.definitive_solution == "",
+                Occurrence.temporary_solution == "",
+            )
+        ).one()
+
+    st.metric("Total de ocorrências", total, border=True, width=300)
 
     col1, col2, col3 = st.columns(3)
+
     with col1:
-        st.metric("Total de ocorrências", total, border=True) # , width=300)
+        if rows_type:
+            st.write("**Ocorrências por Tipo:**")
+            st.dataframe(
+                [{"Tipo": tipo, "Quantidade": qtd} for tipo, qtd in rows_type],
+                width="stretch",
+            )
+
     with col2:
-        st.metric("Total Resolvidas", perm_qty, border=True)
+        if rows_user:
+            st.write("**Ocorrências por Usuário:**")
+            st.dataframe(
+                [{"Usuário": user, "Quantidade": qtd} for user, qtd in rows_user],
+                width="stretch",
+            )
+
     with col3:
-        st.metric("Total Necessário Revisão", temp_qty, border=True)
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Erro de sistema", err_sis, border=True)
-    with col2:
-        st.metric("Erro de operação", err_oper, border=True)
-    with col3:
-        st.metric("Outros", err_na, border=True)
-
-
+        st.write("**Soluções registradas:**")
+        st.dataframe(
+            [
+                {"Situação": "Com solução definitiva", "Quantidade": count_definitive},
+                {"Situação": "Com solução provisória", "Quantidade": count_temporary},
+                {"Situação": "Com ambas as soluções", "Quantidade": count_both},
+                {"Situação": "Sem nenhuma solução", "Quantidade": count_none},
+            ],
+            width="stretch",
+        )
