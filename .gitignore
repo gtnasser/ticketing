@@ -72,3 +72,6 @@ tempCodeRunnerFile.py
 
 # Streamlit
 .streamlit/secrets.toml
+
+# minhas notas nao devem ser armazenadas
+_mynotes.txt
